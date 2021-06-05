@@ -1,0 +1,308 @@
+package codigo;
+
+import java_cup.runtime.Symbol;
+
+parser code
+{:
+    public String resultado="";
+    private Symbol s;
+    
+    public void syntax_error(Symbol s){
+        this.s = s;
+    }
+
+    public Symbol getS(){
+        return this.s;
+}
+:};
+
+terminal 
+    html_a, html_c, head_a, head_c, titulo, body_a, body_c, table_a, table_c, row_a,
+    row_c, column, image_a, image_c, list_a, list_c, url, border, name, width, height,
+    bold_font, print, coma, igual, parentesis_a, parentesis_c, punto_coma, suma, resta,
+    producto, division, comillas, email, webpage, number_int, number_float, dato
+;
+
+non terminal INICIAL, CUERPO, OPCIONES, TABLA, VARIABLE, NEGRITA, IMPRESION, LISTA, ENLACE, IMAGEN, CONTENIDO, OPERACION_MAT, SIGNO, POSIBLES, RELLENO, FILAS, LISTA_DATOS, OPERACION_COMPUESTA;
+
+start with INICIAL;
+
+INICIAL ::=
+html_a head_a titulo igual comillas dato:a comillas head_c CUERPO:b html_c
+{:
+    resultado = "<html>\n"+ "<head>\n"+ "<title> "+ a + "</title>\n"+ "</head>\n" + b + "\n</html>";
+:}
+;
+
+CUERPO ::=
+body_a OPCIONES:a body_c
+{:
+    RESULT = "<body>\n" + String.valueOf(a) + "\n</body>";
+:}
+;
+
+OPCIONES ::=
+TABLA:a {:
+    RESULT = String.valueOf(a);
+      :} | 
+VARIABLE:b {:
+    RESULT = String.valueOf(b);
+         :} | 
+NEGRITA:c {:
+    RESULT = String.valueOf(c);
+        :} | 
+dato:d {:
+    RESULT = String.valueOf(d);
+     :} | 
+IMPRESION:e {:
+    RESULT = String.valueOf(e);
+          :} |
+LISTA:f {:
+    RESULT = String.valueOf(f);
+      :} |
+ENLACE:g {:
+    RESULT = String.valueOf(g);
+    :} | 
+IMAGEN:h {:
+    RESULT = String.valueOf(h);
+       :} | 
+TABLA:a OPCIONES:aa {:
+    RESULT = String.valueOf(a) + "\n" + String.valueOf(aa);
+      :} | 
+VARIABLE:b OPCIONES:bb {:
+    RESULT = String.valueOf(b) + "\n" + String.valueOf(bb);
+         :} | 
+NEGRITA:c OPCIONES:cc {:
+    RESULT = String.valueOf(c) + "\n" + String.valueOf(cc);
+        :} | 
+dato:d OPCIONES:dd {:
+    RESULT = String.valueOf(d) + "\n" + String.valueOf(dd);
+     :} | 
+IMPRESION:e OPCIONES:ee {:
+    RESULT = String.valueOf(e) + "\n" + String.valueOf(ee);
+          :} |
+LISTA:f OPCIONES:ff {:
+    RESULT = String.valueOf(f) + "\n" + String.valueOf(ff);
+      :} |
+ENLACE:g OPCIONES:gg {:
+    RESULT = String.valueOf(g) + "\n" + String.valueOf(gg);
+    :} | 
+IMAGEN:h OPCIONES:hh {:
+    RESULT = String.valueOf(h) + "\n" + String.valueOf(hh);
+       :}
+;
+
+TABLA ::=
+table_a border igual number_int:a FILAS:b table_c 
+    {:
+        RESULT = "<table border=\"" + String.valueOf(a) + "\">\n" + String.valueOf(b) + "</table>";
+    :} |
+table_a FILAS:c table_c
+    {:
+        RESULT = "<table>\n" + String.valueOf(c) + "\n<table>";
+    :}
+;
+
+FILAS ::=
+row_a RELLENO:a row_c {:
+                        RESULT = "\n<tr>" + String.valueOf(a) + "</tr>";
+                    :} |
+row_a RELLENO:b row_c FILAS:c
+    {:
+        RESULT = "\n<tr>" + String.valueOf(b) + "</tr>" + String.valueOf(c);
+    :}
+;
+
+RELLENO ::=
+column igual comillas CONTENIDO:a comillas 
+        {:
+        RESULT = "<td>" + String.valueOf(a) + "</td>";
+        :} |
+
+
+column igual comillas CONTENIDO:a comillas RELLENO:b 
+        {:
+        RESULT = "<td>" + String.valueOf(a) + "</td>" + String.valueOf(b);
+        :} |
+
+
+column igual IMAGEN:a 
+        {:
+        RESULT = "<td>" + String.valueOf(a) + "</td>";
+        :} |
+
+
+column igual IMAGEN:a RELLENO:b
+        {:
+        RESULT = "<td>" + String.valueOf(a) + "</td>" + String.valueOf(b);
+        :} |
+
+
+column igual comillas email:a comillas 
+        {:
+        RESULT = "<td>" + String.valueOf(a) + "</td>";
+        :} |
+
+
+column igual comillas email:a comillas RELLENO:b 
+        {:
+        RESULT = "<td>" + String.valueOf(a) + "</td>" + String.valueOf(b);
+        :} 
+;
+
+VARIABLE ::=
+dato:a igual CONTENIDO:b punto_coma
+        {:
+        RESULT = String.valueOf(a) + "=" + String.valueOf(b) + ";";
+        :} 
+;
+
+NEGRITA ::=
+bold_font parentesis_a CONTENIDO:a parentesis_c
+        {:
+        RESULT = "<b>" + String.valueOf(a) + "</b>";
+        :} 
+;
+
+CONTENIDO ::=
+dato:a 
+        {:
+        RESULT = String.valueOf(a);
+        :} | 
+number_int:b 
+        {:
+        RESULT = String.valueOf(b);
+        :}| 
+number_float:c 
+        {:
+        RESULT = String.valueOf(c);
+        :}| 
+OPERACION_MAT:d
+        {:
+        RESULT = String.valueOf(d);
+        :}| 
+name:e 
+        {:
+        RESULT = String.valueOf(e);
+        :}| 
+OPERACION_COMPUESTA:f
+        {:
+        RESULT = String.valueOf(f);
+        :}
+;
+
+OPERACION_COMPUESTA ::=
+parentesis_a OPERACION_MAT:a parentesis_c 
+        {:
+        RESULT = "(" + String.valueOf(a) + ")";
+        :}| 
+parentesis_a OPERACION_MAT:a parentesis_c SIGNO:b number_int:c
+        {:
+        RESULT = "(" + String.valueOf(a) + ")" + String.valueOf(b) + String.valueOf(c);
+        :}| 
+parentesis_a OPERACION_MAT:a parentesis_c SIGNO:b number_float:c
+        {:
+        RESULT = "(" + String.valueOf(a) + ")" + String.valueOf(b) + String.valueOf(c);
+        :}
+;
+
+OPERACION_MAT ::=
+number_int:a SIGNO:b number_int:c 
+        {:
+        RESULT = String.valueOf(a) + String.valueOf(b) + String.valueOf(c);
+        :}| 
+number_float:a SIGNO:b number_float:c 
+        {:
+        RESULT = String.valueOf(a) + String.valueOf(b) + String.valueOf(c);
+        :}| 
+number_int:a SIGNO:b number_float:c 
+        {:
+        RESULT = String.valueOf(a) + String.valueOf(b) + String.valueOf(c);
+        :}| 
+number_float:a SIGNO:b number_int:c 
+        {:
+        RESULT = String.valueOf(a) + String.valueOf(b) + String.valueOf(c);
+        :}
+;
+
+SIGNO ::=
+suma:a 
+        {:
+        RESULT = String.valueOf(a);
+        :}| 
+resta:b 
+        {:
+        RESULT = String.valueOf(b);
+        :}| 
+producto:c 
+        {:
+        RESULT = String.valueOf(c);
+        :}| 
+division:d
+        {:
+        RESULT = String.valueOf(d);
+        :}
+;
+
+IMPRESION ::=
+print parentesis_a POSIBLES:a parentesis_c punto_coma
+        {:
+        RESULT = "<p>" + String.valueOf(a) + "</p>";
+        :}
+;
+
+POSIBLES ::=
+dato:a 
+        {:
+        RESULT = String.valueOf(a);
+        :}| 
+number_int:b 
+        {:
+        RESULT = String.valueOf(b);
+        :}| 
+dato:a POSIBLES:b 
+        {:
+        RESULT = String.valueOf(a) + String.valueOf(b);
+        :}| 
+number_int:a POSIBLES:b 
+        {:
+        RESULT = String.valueOf(a) + String.valueOf(b);
+        :}
+;
+
+LISTA ::=
+list_a LISTA_DATOS:a list_c
+        {:
+        RESULT = "<ul>" + String.valueOf(a) + "</ul>";
+        :}
+;
+
+LISTA_DATOS ::=
+dato:a coma dato:b 
+        {:
+        RESULT = "<li>" + String.valueOf(a) + "</li>" + "<li>" + String.valueOf(b) + "</li>";
+        :}| 
+dato:a coma LISTA_DATOS:b
+        {:
+        RESULT = "<li>" + String.valueOf(a) + "</li>" + String.valueOf(b);
+        :}
+;
+
+ENLACE ::=
+url igual comillas webpage:a comillas 
+        {:
+        RESULT ="<a href=\"" + String.valueOf(a) + "\">" + "</a>";
+        :}
+;
+
+IMAGEN ::=
+image_a dato:a image_c 
+        {:
+        RESULT ="<img src=\"" + String.valueOf(a) +"\">";
+        :}|
+image_a name igual comillas dato:a comillas url igual comillas webpage:b comillas width number_int:c height number_int:d image_c
+        {:
+        RESULT ="<img src=\"" + String.valueOf(b) + "\" alt=\"" + String.valueOf(a) + "\" width=\"" + String.valueOf(c) + 
+"\" height=\"" + String.valueOf(d) + "\">";
+        :}
+;
